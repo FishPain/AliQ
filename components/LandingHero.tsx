@@ -1,7 +1,5 @@
 "use client";
 
-import { useAuth } from '@clerk/clerk-react';
-import { auth } from "@clerk/nextjs/server";
 import Link from 'next/link';
 import { use } from 'react';
 import TypewriterComponent from "typewriter-effect";
@@ -34,7 +32,7 @@ export const LandingHero = () => {
         Create TikTok content using ViralizeAI 10x faster and 10x more viral.
       </div>
       <div>
-        <Link href={false ? "/dashboard" : "/sign-up"}>
+        <Link href="/home">
           <Button variant="premium" className="md:text-lg p-4 md:p-6 rounded-full font-semibold">
             Start Generating For Free
           </Button>

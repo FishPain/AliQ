@@ -4,7 +4,6 @@ import Link from "next/link";
 //import { useAuth } from "@clerk/nextjs";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { auth } from "@clerk/nextjs/server";
 
 const font = Montserrat({
   weight: "600",
@@ -29,7 +28,7 @@ export const LandingNavbar = () => {
         </h1>
       </Link>
       <div className="flex items-center gap-x-2">
-        <Link href={true ? "/dashboard" : "/sign-up"}>
+        <Link href="/home">
           <Button variant="outline" className="rounded-full">
             Get Started
           </Button>

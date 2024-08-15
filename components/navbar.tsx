@@ -1,5 +1,3 @@
-import { Button } from "@/components/ui/button";
-import { UserButton } from "@clerk/nextjs";
 import MobileSidebar from "./mobile-sidebar";
 
 const Navbar = () => { 
