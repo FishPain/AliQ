@@ -23,7 +23,6 @@ const EcommercePage = () => {
   const router = useRouter();
   const [products, setProducts] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [file, setFile] = useState<File | null>(null);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -185,53 +184,9 @@ const EcommercePage = () => {
             className="rounded-lg border w-full p-4 mb-4 md:px-6 focus-within:shadow-sm grid grid-cols-12 gap-2 relative"
           >
             <FormField
-              name="image"
-              render={({ field }) => (
-                <FormItem className="col-span-12 lg:col-span-1">
-                  <FormControl className="relative w-full">
-                    <div>
-                      <div
-                        className="absolute top-3 flex items-center cursor-pointer"
-                        onClick={() => document.getElementById('image-upload')?.click()}
-                      >
-                        <svg
-                          className="w-5 h-5 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
-                          aria-hidden="true"
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                          strokeWidth={2}
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M4 7h16M4 12h16M4 17h16"
-                          />
-                        </svg>
-                      </div>
-                      <input
-                        type="file"
-                        id="image-upload"
-                        accept="image/*"
-                        className="hidden"
-                        disabled={isLoading}
-                        onChange={(e) => {
-                          const files = e.target.files;
-                          if (files) {
-                            field.onChange(Array.from(files));  // Update the form's state
-                          }
-                        }}
-                      />
-                    </div>
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-            <FormField
               name="prompt"
               render={({ field }) => (
-                <FormItem className="col-span-12 lg:col-span-9">
+                <FormItem className="col-span-12 lg:col-span-11">
                   <FormControl className="m-0 p-0">
                     <Input
                       className="border-0 outline-none focus-visible:ring-0 focus-visible:ring-transparent"
@@ -243,28 +198,103 @@ const EcommercePage = () => {
                 </FormItem>
               )}
             />
-            <div className="col-span-12 lg:col-span-2 flex justify-center">
-              <Button
-                type="submit"
-                disabled={isLoading}
-                className="w-full h-full"
-              >
-                Generate
-              </Button>
+            <div className="grid grid-cols-12">
+              <div className="col-span-12 lg:col-span-2">
+                <div
+                  className="absolute top-6 right-50 flex items-center cursor-pointer"
+                  onClick={() => document.getElementById('image-upload')?.click()}
+                >
+                  <svg
+                    className="w-5 h-5 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+                    aria-hidden="true"
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24" height="24" viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2" >
+                    <path d="M12 2c-1.7 0-3 1.2-3 2.6v6.8c0 1.4 1.3 2.6 3 2.6s3-1.2 3-2.6V4.6C15 3.2 13.7 2 12 2z" />
+                    <path d="M19 10v1a7 7 0 0 1-14 0v-1M12 18.4v3.3M8 22h8" />
+                  </svg>
+                </div>
+                <input
+                  type="file"
+                  id="image-upload"
+                  accept="image/*"
+                  className="hidden"
+                  disabled={isLoading}
+                  onChange={(e) => {
+                    const files = e.target.files;
+                    if (files) {
+                      field.onChange(Array.from(files));  // Update the form's state
+                    }
+                  }}
+                />
+              </div>
+              <FormField
+                name="image"
+                render={({ field }) => (
+                  <FormItem className="col-span-12 lg:col-span-2">
+                    <FormControl className="w-full">
+                      <div className="">
+                        <div
+                          className="absolute top-6 right-30 flex items-center cursor-pointer"
+                          onClick={() => document.getElementById('image-upload')?.click()}
+                        >
+                          <svg
+                            className="w-5 h-5 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+                            aria-hidden="true"
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            strokeWidth={2}
+                          >
+                            <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" />
+                          </svg>
+                        </div>
+                        <input
+                          type="file"
+                          id="image-upload"
+                          accept="image/*"
+                          className="hidden"
+                          disabled={isLoading}
+                          onChange={(e) => {
+                            const files = e.target.files;
+                            if (files) {
+                              field.onChange(Array.from(files));  // Update the form's state
+                            }
+                          }}
+                        />
+                      </div>
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+
+              <div className="col-span-12 lg:col-span-8 flex justify-center">
+                <Button
+                  type="submit"
+                  disabled={isLoading}
+                >
+                  Search
+                </Button>
+              </div>
             </div>
           </form>
         </Form>
       </div>
-      {isLoading ? (
-        <p className="text-center text-gray-600">Loading products...</p>
-      ) : products.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {products.map((product: any) => renderProduct(product))}
-        </div>
-      ) : (
-        <p className="text-center text-gray-600">No products found.</p>
-      )}
-    </div>
+      {
+        isLoading ? (
+          <p className="text-center text-gray-600">Loading products...</p>
+        ) : products.length > 0 ? (
+          <div className="px-4 lg:px-8 flex justify-center gap-4 items-center grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+            {products.map((product: any) => renderProduct(product))}
+          </div>
+        ) : (
+          <p className="text-center text-gray-600">No products found.</p>
+        )
+      }
+    </div >
   );
 };
 
