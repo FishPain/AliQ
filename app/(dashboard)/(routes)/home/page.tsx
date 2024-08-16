@@ -27,7 +27,7 @@ const EcommercePage = () => {
   const [isRecording, setIsRecording] = useState(false);
   const [recognition, setRecognition] = useState<SpeechRecognition | null>(null);
   const [interimTranscript, setInterimTranscript] = useState<string>("");
-
+  const [imagePreview, setImagePreview] = useState<string | null>(null);  // State for image preview
 
   useEffect(() => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -56,8 +56,7 @@ const EcommercePage = () => {
 
     const fetchProducts = async () => {
       try {
-        // const response = await fetch("https://api.escuelajs.co/api/v1/products");
-        const response = await fetch("/api/products/all");
+        const response = await fetch("https://api.escuelajs.co/api/v1/products");
         const data = await response.json();
 
         const cleanedData = data.map((product: any) => ({
@@ -103,6 +102,15 @@ const EcommercePage = () => {
       alert('An error occurred while uploading the file.');
       console.error('Error:', error);
       return null;
+    }
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files && files[0]) {
+      const file = files[0];
+      setImagePreview(URL.createObjectURL(file));  // Set preview image
+      form.setValue("image", [file]);  // Update the form's state with the selected image
     }
   };
 
@@ -250,21 +258,22 @@ const EcommercePage = () => {
                 </FormItem>
               )}
             />
-            {/* audio input */}
             <div className="grid grid-cols-12">
-              <div className="col-span-12 lg:col-span-2">
+              {/* audio input */}
+              <div className="col-span-12 lg:col-span-3 flex justify-center items-center">
                 <div
-                  className="absolute top-6 right-50 flex items-center cursor-pointer"
+                  className="cursor-pointer"
                   onClick={handleAudioClick}  // Trigger the modal
                 >
                   <svg
-                    className="w-5 h-5 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+                    className="w-6 h-6 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
                     aria-hidden="true"
                     xmlns="http://www.w3.org/2000/svg"
-                    width="24" height="24" viewBox="0 0 24 24"
+                    viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
-                    strokeWidth="2" >
+                    strokeWidth="2"
+                  >
                     <path d="M12 2c-1.7 0-3 1.2-3 2.6v6.8c0 1.4 1.3 2.6 3 2.6s3-1.2 3-2.6V4.6C15 3.2 13.7 2 12 2z" />
                     <path d="M19 10v1a7 7 0 0 1-14 0v-1M12 18.4v3.3M8 22h8" />
                   </svg>
@@ -274,45 +283,49 @@ const EcommercePage = () => {
               <FormField
                 name="image"
                 render={({ field }) => (
-                  <FormItem className="col-span-12 lg:col-span-2">
+                  <FormItem className="col-span-12 lg:col-span-3 flex justify-center items-center">
                     <FormControl className="w-full">
-                      <div className="">
-                        <div
-                          className="absolute top-6 right-30 flex items-center cursor-pointer"
-                          onClick={() => document.getElementById('image-upload')?.click()}
-                        >
-                          <svg
-                            className="w-5 h-5 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
-                            aria-hidden="true"
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                            strokeWidth={2}
+                      <div>
+                        {imagePreview ? (
+                          <div className="col-span-12 lg:col-span-8 flex justify-center">
+                            <img
+                              src={imagePreview}
+                              alt="Image preview"
+                              className="rounded-lg shadow-lg w-32 h-32 object-cover" // Bigger size for the preview
+                            />
+                          </div>
+                        ) : (
+                          <div
+                            className="flex items-center cursor-pointer"
+                            onClick={() => document.getElementById('image-upload')?.click()}
                           >
-                            <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" />
-                          </svg>
-                        </div>
+                            <svg
+                              className="w-6 h-6 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+                              aria-hidden="true"
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                              strokeWidth={2}
+                            >
+                              <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" />
+                            </svg>
+                          </div>
+                        )}
                         <input
                           type="file"
                           id="image-upload"
                           accept="image/*"
                           className="hidden"
                           disabled={isLoading}
-                          onChange={(e) => {
-                            const files = e.target.files;
-                            if (files) {
-                              field.onChange(Array.from(files));  // Update the form's state
-                            }
-                          }}
+                          onChange={handleImageChange}  // Handle image change
                         />
                       </div>
                     </FormControl>
                   </FormItem>
                 )}
               />
-
-              <div className="col-span-12 lg:col-span-8 flex justify-center">
+              <div className="col-span-12 lg:col-span-6 flex justify-center">
                 <Button
                   type="submit"
                   disabled={isLoading}
