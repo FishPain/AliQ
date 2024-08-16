@@ -3,14 +3,14 @@ import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { formSchema } from "./constants";
-
 import * as z from "zod";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Heading } from "@/components/ui/heading";
-import { ShoppingCart } from "lucide-react";
+import { ShoppingCart, Mic, MicOff } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import Modal from "@/components/modal"; // Import the Modal component
 
 const EcommercePage = () => {
   const form = useForm<z.infer<typeof formSchema>>({
@@ -23,8 +23,37 @@ const EcommercePage = () => {
   const router = useRouter();
   const [products, setProducts] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [recognition, setRecognition] = useState<SpeechRecognition | null>(null);
+  const [interimTranscript, setInterimTranscript] = useState<string>("");
+
 
   useEffect(() => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (SpeechRecognition) {
+      const recognitionInstance = new SpeechRecognition();
+      recognitionInstance.continuous = true;
+      recognitionInstance.interimResults = true;
+      recognitionInstance.lang = "en-US";
+
+      recognitionInstance.onresult = (event: SpeechRecognitionEvent) => {
+        let interim = "";
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          if (event.results[i].isFinal) {
+            form.setValue("prompt", form.getValues("prompt") + " " + event.results[i][0].transcript);
+          } else {
+            interim += event.results[i][0].transcript;
+          }
+        }
+        setInterimTranscript(interim);
+      };
+
+      setRecognition(recognitionInstance);
+    } else {
+      alert("Speech recognition not supported in this browser.");
+    }
+
     const fetchProducts = async () => {
       try {
         const response = await fetch("https://api.escuelajs.co/api/v1/products");
@@ -81,7 +110,6 @@ const EcommercePage = () => {
     const imageFile = values.image[0]; // Assuming 'image' is a file input field
     const messages = [];
 
-    // Add text prompt to messages
     if (query) {
       messages.push({
         type: "text",
@@ -89,7 +117,6 @@ const EcommercePage = () => {
       });
     }
 
-    // Handle image file if present
     if (imageFile) {
       const filePath = await handleUpload(imageFile);
       if (filePath) {
@@ -139,6 +166,29 @@ const EcommercePage = () => {
       console.error("Failed to search products", error);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleAudioClick = () => {
+    setIsModalVisible(true);
+  };
+
+  const closeModal = () => {
+    setIsModalVisible(false);
+    if (isRecording && recognition) {
+      recognition.stop();
+      setIsRecording(false);
+    }
+  };
+
+  const toggleRecording = () => {
+    if (isRecording) {
+      recognition?.stop();
+      setIsRecording(false);
+    } else {
+      setInterimTranscript("");
+      recognition?.start();
+      setIsRecording(true);
     }
   };
 
@@ -204,7 +254,7 @@ const EcommercePage = () => {
               <div className="col-span-12 lg:col-span-2">
                 <div
                   className="absolute top-6 right-50 flex items-center cursor-pointer"
-                  onClick={() => alert('Audio input not supported')}
+                  onClick={handleAudioClick}  // Trigger the modal
                 >
                   <svg
                     className="w-5 h-5 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
@@ -213,7 +263,7 @@ const EcommercePage = () => {
                     width="24" height="24" viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
-                    stroke-width="2" >
+                    strokeWidth="2" >
                     <path d="M12 2c-1.7 0-3 1.2-3 2.6v6.8c0 1.4 1.3 2.6 3 2.6s3-1.2 3-2.6V4.6C15 3.2 13.7 2 12 2z" />
                     <path d="M19 10v1a7 7 0 0 1-14 0v-1M12 18.4v3.3M8 22h8" />
                   </svg>
@@ -273,6 +323,23 @@ const EcommercePage = () => {
           </form>
         </Form>
       </div>
+
+      {/* Modal for Audio Input */}
+      <Modal isVisible={isModalVisible} onClose={closeModal}>
+        <h2 className="text-lg font-semibold text-center">Audio Input</h2>
+        <div className="flex justify-center items-center mt-4">
+          <Button
+            onClick={toggleRecording}
+            className={`w-16 h-16 ${isRecording ? "bg-red-600" : "bg-green-600"} text-white rounded-full flex justify-center items-center`}
+          >
+            {isRecording ? <MicOff className="w-8 h-8" /> : <Mic className="w-8 h-8" />}
+          </Button>
+        </div>
+        <p className="text-sm text-gray-600 mt-4 text-center">
+          {isRecording ? "Recording... Click to stop." : "Click to start recording."}
+        </p>
+        <p className="mt-4 text-center text-gray-700">{interimTranscript}</p> {/* Display the interim transcript */}
+      </Modal>
       {
         isLoading ? (
           <p className="text-center text-gray-600">Loading products...</p>
@@ -284,7 +351,7 @@ const EcommercePage = () => {
           <p className="text-center text-gray-600">No products found.</p>
         )
       }
-    </div >
+    </div>
   );
 };
 
