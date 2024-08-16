@@ -56,7 +56,8 @@ const EcommercePage = () => {
 
     const fetchProducts = async () => {
       try {
-        const response = await fetch("https://api.escuelajs.co/api/v1/products");
+        // const response = await fetch("https://api.escuelajs.co/api/v1/products");
+        const response = await fetch("/api/products/all");
         const data = await response.json();
 
         const cleanedData = data.map((product: any) => ({
