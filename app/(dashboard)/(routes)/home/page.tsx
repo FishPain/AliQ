@@ -56,7 +56,7 @@ const EcommercePage = () => {
 
     const fetchProducts = async () => {
       try {
-        const response = await fetch("https://api.escuelajs.co/api/v1/products");
+        const response = await fetch("/api/products/all");
         const data = await response.json();
 
         const cleanedData = data.map((product: any) => ({
@@ -240,13 +240,13 @@ const EcommercePage = () => {
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(handleSearch)}
-            className="rounded-lg border w-full p-4 mb-4 md:px-6 focus-within:shadow-sm grid grid-cols-12 gap-2 relative"
+            className="flex flex-row relative rounded-lg border w-full p-4 focus-within:shadow-sm gap-2 mb-4"
           >
             {/* text input */}
             <FormField
               name="prompt"
               render={({ field }) => (
-                <FormItem className="col-span-12 lg:col-span-11">
+                <FormItem className="flex w-full">
                   <FormControl className="m-0 p-0">
                     <Input
                       className="border-0 outline-none focus-visible:ring-0 focus-visible:ring-transparent"
@@ -258,83 +258,79 @@ const EcommercePage = () => {
                 </FormItem>
               )}
             />
-            <div className="grid grid-cols-12">
-              {/* audio input */}
-              <div className="col-span-12 lg:col-span-3 flex justify-center items-center">
-                <div
-                  className="cursor-pointer"
-                  onClick={handleAudioClick}  // Trigger the modal
+            {/* audio input */}
+            <div className="flex justify-center items-center">
+              <div
+                className="cursor-pointer"
+                onClick={handleAudioClick}  // Trigger the modal
+              >
+                <svg
+                  className="w-6 h-6 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+                  aria-hidden="true"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
                 >
-                  <svg
-                    className="w-6 h-6 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
-                    aria-hidden="true"
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  >
-                    <path d="M12 2c-1.7 0-3 1.2-3 2.6v6.8c0 1.4 1.3 2.6 3 2.6s3-1.2 3-2.6V4.6C15 3.2 13.7 2 12 2z" />
-                    <path d="M19 10v1a7 7 0 0 1-14 0v-1M12 18.4v3.3M8 22h8" />
-                  </svg>
-                </div>
+                  <path d="M12 2c-1.7 0-3 1.2-3 2.6v6.8c0 1.4 1.3 2.6 3 2.6s3-1.2 3-2.6V4.6C15 3.2 13.7 2 12 2z" />
+                  <path d="M19 10v1a7 7 0 0 1-14 0v-1M12 18.4v3.3M8 22h8" />
+                </svg>
               </div>
-              {/* image input */}
-              {imagePreview ? (
-                <div className="col-span-12 lg:col-span-8 flex justify-center">
-                  <img
-                    src={imagePreview}
-                    alt="Image preview"
-                    className="rounded-lg shadow-lg object-contain"
-                  />
-                </div>
-              ) : (
-                <FormField
-                  name="image"
-                  render={({ field }) => (
-                    <FormItem className="col-span-12 lg:col-span-3 flex justify-center items-center">
-                      <FormControl className="w-full">
-                        <div>
-                          <div
-                            className="flex items-center cursor-pointer"
-                            onClick={() => document.getElementById('image-upload')?.click()}
-                          >
-                            <svg
-                              className="w-6 h-6 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
-                              aria-hidden="true"
-                              xmlns="http://www.w3.org/2000/svg"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                              strokeWidth={2}
-                            >
-                              <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" />
-                            </svg>
-                          </div>
-                          <input
-                            type="file"
-                            id="image-upload"
-                            accept="image/*"
-                            className="hidden"
-                            disabled={isLoading}
-                            onChange={handleImageChange}  // Handle image change
-                          />
-                        </div>
-                      </FormControl>
-                    </FormItem>
-                  )}
+            </div>
+            {/* image input */}
+            {imagePreview ? (
+              <div className="flex justify-center">
+                <img
+                  src={imagePreview}
+                  alt="Image preview"
+                  className="rounded-lg shadow-lg object-contain h-24 w-24"
                 />
-              )}
-
-
-              <div className="col-span-12 lg:col-span-6 flex justify-center">
-                <Button
-                  type="submit"
-                  disabled={isLoading}
-                >
-                  Search
-                </Button>
               </div>
+            ) : (
+              <FormField
+                name="image"
+                render={({ field }) => (
+                  <FormItem className="flex justify-center items-center">
+                    <FormControl className="w-full">
+                      <div>
+                        <div
+                          className="flex items-center cursor-pointer"
+                          onClick={() => document.getElementById('image-upload')?.click()}
+                        >
+                          <svg
+                            className="w-6 h-6 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+                            aria-hidden="true"
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            strokeWidth={2}
+                          >
+                            <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" />
+                          </svg>
+                        </div>
+                        <input
+                          type="file"
+                          id="image-upload"
+                          accept="image/*"
+                          className="hidden"
+                          disabled={isLoading}
+                          onChange={handleImageChange}  // Handle image change
+                        />
+                      </div>
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+            )}
+            <div className="flex justify-center items-center">
+              <Button
+                type="submit"
+                disabled={isLoading}
+              >
+                Search
+              </Button>
             </div>
           </form>
         </Form>
