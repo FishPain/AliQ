@@ -21,6 +21,7 @@
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "crisp-sdk-web": "^1.0.25",
+    "formidable": "^3.5.1",
     "lucide-react": "^0.400.0",
     "mongoose": "^8.5.2",
     "next": "14.2.4",
@@ -40,6 +41,7 @@
   },
   "devDependencies": {
     "@types/amqplib": "^0.10.5",
+    "@types/formidable": "^3.4.5",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",

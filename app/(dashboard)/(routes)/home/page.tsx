@@ -17,20 +17,20 @@ const EcommercePage = () => {
     resolver: zodResolver(formSchema),
     defaultValues: {
       prompt: "",
+      image: [],
     },
   });
   const router = useRouter();
   const [products, setProducts] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [file, setFile] = useState<File | null>(null);
 
-  // Fetch all product data initially
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         const response = await fetch("https://api.escuelajs.co/api/v1/products");
         const data = await response.json();
 
-        // Ensure that the URLs are properly formatted and absolute
         const cleanedData = data.map((product: any) => ({
           ...product,
           images: product.images.map((image: string) => {
@@ -52,62 +52,97 @@ const EcommercePage = () => {
     fetchProducts();
   }, []);
 
-  const getSearchPrompt = (query: string) => { 
-    return `${query}`;
-  }
+  const handleUpload = async (file: File): Promise<string | null> => {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const uploadResponse = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const result = await uploadResponse.json();
+      if (uploadResponse.ok) {
+        console.log('File path:', result.filePath);
+        return result.filePath;
+      } else {
+        alert(`Failed to upload file: ${result.error}`);
+        return null;
+      }
+    } catch (error) {
+      alert('An error occurred while uploading the file.');
+      console.error('Error:', error);
+      return null;
+    }
+  };
 
   const handleSearch = async (values: z.infer<typeof formSchema>) => {
     const query = values.prompt.trim();
-    
-    if (query === "") {
-      // If the search query is empty, fetch all products again
-      const response = await fetch("https://api.escuelajs.co/api/v1/products");
-      const data = await response.json();
-      setProducts(data);
-    } else {
-      try {
-        setIsLoading(true);
-        
-        // Fetch all products again to reset the filter
-        const response = await fetch("https://api.escuelajs.co/api/v1/products");
-        const allProducts = await response.json();
-        setProducts(allProducts);
-  
-        const searchResponse = await fetch("/api/products/search", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ messages: [{ role: "user", content: getSearchPrompt(query) }] }),
-        });
-        const result = await searchResponse.json();
-        if (searchResponse.ok) {
-          console.log("Search results:", result); 
-          const recommendations = result;
-  
-          // Extract product IDs and include reasons in filteredProducts
-          const filteredProducts = allProducts
-            .map((product: { id: { toString: () => any; }; }) => {
-              const recommendation = recommendations.find((rec: { product_id: any; }) => rec.product_id === product.id.toString());
-              if (recommendation) {
-                return { ...product, reason: recommendation.reason };
-              }
-              return null;
-            })
-            .filter((product: null) => product !== null);
+    const imageFile = values.image[0]; // Assuming 'image' is a file input field
+    const messages = [];
 
-          setProducts(filteredProducts);
-        }
-      } catch (error) {
-        console.error("Failed to search products", error);
-      } finally {
-        setIsLoading(false);
+    // Add text prompt to messages
+    if (query) {
+      messages.push({
+        type: "text",
+        text: query,
+      });
+    }
+
+    // Handle image file if present
+    if (imageFile) {
+      const filePath = await handleUpload(imageFile);
+      if (filePath) {
+        messages.push({
+          type: "image_url",
+          url: filePath,
+        });
       }
     }
+
+    const payload = {
+      role: "user",
+      content: messages,
+    };
+
+    try {
+      setIsLoading(true);
+      console.log("Payload:", payload);
+      const response = await fetch("/api/products/search", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ messages: [payload] }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        const recommendations = result;
+
+        const filteredProducts = products
+          .map((product: { id: { toString: () => any } }) => {
+            const recommendation = recommendations.find(
+              (rec: { product_id: any }) => rec.product_id === product.id.toString()
+            );
+            if (recommendation) {
+              return { ...product, reason: recommendation.reason };
+            }
+            return null;
+          })
+          .filter((product: { reason: any; id: { toString: () => any } } | null) => product !== null);
+
+        setProducts(filteredProducts);
+      }
+    } catch (error) {
+      console.error("Failed to search products", error);
+    } finally {
+      setIsLoading(false);
+    }
   };
-  
-  
-  // Render product information
+
   const renderProduct = (product: any) => {
     return (
       <div key={product.id} className="bg-white shadow-lg rounded-lg p-6">
@@ -133,7 +168,6 @@ const EcommercePage = () => {
       </div>
     );
   };
-  
 
   return (
     <div>
@@ -144,57 +178,83 @@ const EcommercePage = () => {
         iconColor="text-red-700"
         bgColor="bg-red-700/10"
       />
-      <div className="px-4 lg:px-8 flex gap-4 items-center">
-    <Form {...form}>
-      <form
-        onSubmit={form.handleSubmit(handleSearch)}
-        className="rounded-lg border w-full p-4 mb-4 md:px-6 focus-within:shadow-sm grid grid-cols-12 gap-2 relative"
-      >
-        <FormField
-          name="prompt"
-          render={({ field }) => (
-            <FormItem className="col-span-12 lg:col-span-8">
-              <FormControl className="m-0 p-0">
-                <Input
-                  className="border-0 outline-none focus-visible:ring-0 focus-visible:ring-transparent"
-                  disabled={isLoading}
-                  placeholder="eg. It's my gf bday, plz reco some 礼物. No need too atas."
-                  {...field}
-                />
-              </FormControl>
-            </FormItem>
-          )}
-        />
-        
-        {/* Image Upload Field */}
-        <FormField
-          name="image"
-          render={({ field }) => (
-            <FormItem className="col-span-12 lg:col-span-2">
-              <FormControl className="m-0 p-0">
-                <Input
-                  type="file"
-                  accept="image/*"
-                  className="border-0 outline-none focus-visible:ring-0 focus-visible:ring-transparent"
-                  disabled={isLoading}
-                  {...field}
-                />
-              </FormControl>
-            </FormItem>
-          )}
-        />
-
-        <Button
-          type="submit"  // Make sure this button submits the form
-          disabled={isLoading}
-          className="w-full p-2 col-span-12 lg:col-span-2"
-        >
-          Generate
-        </Button>
-      </form>
-    </Form>
-  </div>
-
+      <div className="px-4 lg:px-8 flex justify-center gap-4 items-center">
+        <Form {...form}>
+          <form
+            onSubmit={form.handleSubmit(handleSearch)}
+            className="rounded-lg border w-full p-4 mb-4 md:px-6 focus-within:shadow-sm grid grid-cols-12 gap-2 relative"
+          >
+            <FormField
+              name="image"
+              render={({ field }) => (
+                <FormItem className="col-span-12 lg:col-span-1">
+                  <FormControl className="relative w-full">
+                    <div>
+                      <div
+                        className="absolute top-3 flex items-center cursor-pointer"
+                        onClick={() => document.getElementById('image-upload')?.click()}
+                      >
+                        <svg
+                          className="w-5 h-5 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+                          aria-hidden="true"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                          strokeWidth={2}
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M4 7h16M4 12h16M4 17h16"
+                          />
+                        </svg>
+                      </div>
+                      <input
+                        type="file"
+                        id="image-upload"
+                        accept="image/*"
+                        className="hidden"
+                        disabled={isLoading}
+                        onChange={(e) => {
+                          const files = e.target.files;
+                          if (files) {
+                            field.onChange(Array.from(files));  // Update the form's state
+                          }
+                        }}
+                      />
+                    </div>
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+            <FormField
+              name="prompt"
+              render={({ field }) => (
+                <FormItem className="col-span-12 lg:col-span-9">
+                  <FormControl className="m-0 p-0">
+                    <Input
+                      className="border-0 outline-none focus-visible:ring-0 focus-visible:ring-transparent"
+                      disabled={isLoading}
+                      placeholder="eg. It's my gf bday, plz reco some 礼物. No need too atas."
+                      {...field}
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+            <div className="col-span-12 lg:col-span-2 flex justify-center">
+              <Button
+                type="submit"
+                disabled={isLoading}
+                className="w-full h-full"
+              >
+                Generate
+              </Button>
+            </div>
+          </form>
+        </Form>
+      </div>
       {isLoading ? (
         <p className="text-center text-gray-600">Loading products...</p>
       ) : products.length > 0 ? (
