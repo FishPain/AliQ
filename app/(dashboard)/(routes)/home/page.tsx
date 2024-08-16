@@ -54,31 +54,31 @@ const EcommercePage = () => {
       alert("Speech recognition not supported in this browser.");
     }
 
-    const fetchProducts = async () => {
-      try {
-        const response = await fetch("/api/products/all");
-        const data = await response.json();
-
-        const cleanedData = data.map((product: any) => ({
-          ...product,
-          images: product.images.map((image: string) => {
-            if (image.startsWith('["') && image.endsWith('"]')) {
-              return JSON.parse(image)[0];
-            }
-            return image;
-          }),
-        }));
-
-        setProducts(cleanedData);
-      } catch (error) {
-        console.error("Failed to fetch products", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     fetchProducts();
   }, []);
+
+  const fetchProducts = async (isLoading: boolean = false) => {
+    try {
+      const response = await fetch("/api/products/all");
+      const data = await response.json();
+
+      const cleanedData = data.map((product: any) => ({
+        ...product,
+        images: product.images.map((image: string) => {
+          if (image.startsWith('["') && image.endsWith('"]')) {
+            return JSON.parse(image)[0];
+          }
+          return image;
+        }),
+      }));
+
+      setProducts(cleanedData);
+    } catch (error) {
+      console.error("Failed to fetch products", error);
+    } finally {
+      setIsLoading(isLoading);
+    }
+  };
 
   const handleUpload = async (file: File): Promise<string | null> => {
     const formData = new FormData();
@@ -116,7 +116,7 @@ const EcommercePage = () => {
 
   const handleSearch = async (values: z.infer<typeof formSchema>) => {
     const query = values.prompt.trim();
-    const imageFile = values.image[0]; // Assuming 'image' is a file input field
+    const imageFile = values.image[0];
     const messages = [];
 
     if (query) {
@@ -144,7 +144,12 @@ const EcommercePage = () => {
     try {
       setIsLoading(true);
       console.log("Payload:", payload);
-      const response = await fetch("/api/products/search", {
+
+      // Fetch the full list of products before filtering
+      const response = await fetch("/api/products/all");
+      const allProducts = await response.json();
+
+      const searchResponse = await fetch("/api/products/search", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -152,14 +157,13 @@ const EcommercePage = () => {
         body: JSON.stringify({ messages: [payload] }),
       });
 
-      const result = await response.json();
+      const result = await searchResponse.json();
 
-      if (response.ok) {
-        const recommendations = result;
-
-        const filteredProducts = products
+      if (searchResponse.ok) {
+        console.log("Recommendations:", result);
+        const filteredProducts = allProducts
           .map((product: { id: { toString: () => any } }) => {
-            const recommendation = recommendations.find(
+            const recommendation = result.find(
               (rec: { product_id: any }) => rec.product_id === product.id.toString()
             );
             if (recommendation) {
@@ -175,8 +179,12 @@ const EcommercePage = () => {
       console.error("Failed to search products", error);
     } finally {
       setIsLoading(false);
+      setImagePreview(null);  // Reset the image preview
+      form.reset();
     }
   };
+
+
 
   const handleAudioClick = () => {
     setIsModalVisible(true);
@@ -246,7 +254,7 @@ const EcommercePage = () => {
             <FormField
               name="prompt"
               render={({ field }) => (
-                <FormItem className="flex w-full">
+                <FormItem className="flex w-full justify-center items-center">
                   <FormControl className="m-0 p-0">
                     <Input
                       className="border-0 outline-none focus-visible:ring-0 focus-visible:ring-transparent"
