@@ -280,21 +280,21 @@ const EcommercePage = () => {
                 </div>
               </div>
               {/* image input */}
-              <FormField
-                name="image"
-                render={({ field }) => (
-                  <FormItem className="col-span-12 lg:col-span-3 flex justify-center items-center">
-                    <FormControl className="w-full">
-                      <div>
-                        {imagePreview ? (
-                          <div className="col-span-12 lg:col-span-8 flex justify-center">
-                            <img
-                              src={imagePreview}
-                              alt="Image preview"
-                              className="rounded-lg shadow-lg w-32 h-32 object-cover" // Bigger size for the preview
-                            />
-                          </div>
-                        ) : (
+              {imagePreview ? (
+                <div className="col-span-12 lg:col-span-8 flex justify-center">
+                  <img
+                    src={imagePreview}
+                    alt="Image preview"
+                    className="rounded-lg shadow-lg object-contain"
+                  />
+                </div>
+              ) : (
+                <FormField
+                  name="image"
+                  render={({ field }) => (
+                    <FormItem className="col-span-12 lg:col-span-3 flex justify-center items-center">
+                      <FormControl className="w-full">
+                        <div>
                           <div
                             className="flex items-center cursor-pointer"
                             onClick={() => document.getElementById('image-upload')?.click()}
@@ -311,20 +311,22 @@ const EcommercePage = () => {
                               <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" />
                             </svg>
                           </div>
-                        )}
-                        <input
-                          type="file"
-                          id="image-upload"
-                          accept="image/*"
-                          className="hidden"
-                          disabled={isLoading}
-                          onChange={handleImageChange}  // Handle image change
-                        />
-                      </div>
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
+                          <input
+                            type="file"
+                            id="image-upload"
+                            accept="image/*"
+                            className="hidden"
+                            disabled={isLoading}
+                            onChange={handleImageChange}  // Handle image change
+                          />
+                        </div>
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+              )}
+
+
               <div className="col-span-12 lg:col-span-6 flex justify-center">
                 <Button
                   type="submit"
