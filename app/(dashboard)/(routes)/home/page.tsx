@@ -183,6 +183,7 @@ const EcommercePage = () => {
             onSubmit={form.handleSubmit(handleSearch)}
             className="rounded-lg border w-full p-4 mb-4 md:px-6 focus-within:shadow-sm grid grid-cols-12 gap-2 relative"
           >
+            {/* text input */}
             <FormField
               name="prompt"
               render={({ field }) => (
@@ -198,11 +199,12 @@ const EcommercePage = () => {
                 </FormItem>
               )}
             />
+            {/* audio input */}
             <div className="grid grid-cols-12">
               <div className="col-span-12 lg:col-span-2">
                 <div
                   className="absolute top-6 right-50 flex items-center cursor-pointer"
-                  onClick={() => document.getElementById('image-upload')?.click()}
+                  onClick={() => alert('Audio input not supported')}
                 >
                   <svg
                     className="w-5 h-5 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
@@ -216,20 +218,8 @@ const EcommercePage = () => {
                     <path d="M19 10v1a7 7 0 0 1-14 0v-1M12 18.4v3.3M8 22h8" />
                   </svg>
                 </div>
-                <input
-                  type="file"
-                  id="image-upload"
-                  accept="image/*"
-                  className="hidden"
-                  disabled={isLoading}
-                  onChange={(e) => {
-                    const files = e.target.files;
-                    if (files) {
-                      field.onChange(Array.from(files));  // Update the form's state
-                    }
-                  }}
-                />
               </div>
+              {/* image input */}
               <FormField
                 name="image"
                 render={({ field }) => (
