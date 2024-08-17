@@ -11,7 +11,7 @@ export const Loader = () => {
         />
       </div>
       <p className="text-sm text-muted-foreground">
-        ViralizeAI is thinking...
+        Ali-Query is thinking...
       </p>
     </div>
   );
